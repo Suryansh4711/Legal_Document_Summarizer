@@ -1,3 +1,4 @@
+// app/summary/page.tsx
 "use client";
 import { useState } from "react";
 import SummaryControls from "../../components/SummaryControls";

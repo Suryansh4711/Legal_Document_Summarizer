@@ -1,78 +1,62 @@
+// components/UploadForm.tsx
 "use client";
 import { useState } from "react";
-import { useDropzone } from "react-dropzone";
 import { motion } from "framer-motion";
 
 export default function UploadForm() {
   const [file, setFile] = useState<File | null>(null);
-  const [uploading, setUploading] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    accept: { "application/pdf": [".pdf"], "text/plain": [".txt"] },
-    multiple: false,
-    onDrop: (acceptedFiles) => {
-      if (acceptedFiles.length > 0) setFile(acceptedFiles[0]);
-    },
-  });
+  async function upload() {
+    if (!file) return alert("Choose a PDF file first");
+    setLoading(true);
 
-  async function handleUpload() {
-    if (!file) return;
-    setUploading(true);
-
-    const formData = new FormData();
-    formData.append("file", file);
+    const fd = new FormData();
+    fd.append("file", file);
 
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API}/upload`, {
         method: "POST",
-        body: formData,
+        body: fd,
       });
-
       if (!res.ok) throw new Error("Upload failed");
-
-      const json = await res.json();
-      localStorage.setItem("documentText", json.text);
-      localStorage.setItem("paragraphs", JSON.stringify(json.paragraphs || []));
-      alert("Document uploaded successfully!");
+      const j = await res.json();
+      localStorage.setItem("documentText", j.text);
+      localStorage.setItem("paragraphs", JSON.stringify(j.paragraphs || []));
+      // move to summary page
+      window.location.href = "/summary";
     } catch (err) {
       console.error(err);
-      alert("Error uploading document");
+      alert("Upload failed. See console.");
     } finally {
-      setUploading(false);
+      setLoading(false);
     }
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-      className="bg-card p-6 rounded-lg shadow-md border-border"
-    >
-      <div
-        {...getRootProps()}
-        className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
-          isDragActive ? "border-primary bg-primary/10" : "border-border"
-        }`}
-      >
-        <input {...getInputProps()} />
-        <p className="text-muted-foreground">
-          {isDragActive ? "Drop the file here..." : "Drag & drop a PDF or TXT file, or click to select"}
-        </p>
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="bg-card p-6 rounded-md shadow-sm border-border">
+      <label className="block mb-2 font-medium">Choose PDF</label>
+      <input
+        type="file"
+        accept="application/pdf"
+        onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+        className="mb-4"
+      />
+      <div className="flex items-center gap-3">
+        <button onClick={upload} className="bg-primary text-primary-foreground px-4 py-2 rounded-md" disabled={loading}>
+          {loading ? "Uploading..." : "Upload & Process"}
+        </button>
+        <button
+          onClick={() => {
+            setFile(null);
+            localStorage.removeItem("documentText");
+            localStorage.removeItem("paragraphs");
+          }}
+          className="px-3 py-2 border border-border rounded-md"
+        >
+          Clear
+        </button>
       </div>
-
-      {file && (
-        <div className="mt-4">
-          <p className="text-sm text-muted-foreground">Selected: {file.name}</p>
-          <button
-            onClick={handleUpload}
-            disabled={uploading}
-            className="mt-2 bg-primary text-primary-foreground px-4 py-2 rounded-md"
-          >
-            {uploading ? "Uploading..." : "Upload"}
-          </button>
-        </div>
-      )}
     </motion.div>
   );
 }

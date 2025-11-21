@@ -1,3 +1,4 @@
+// components/EntityList.tsx
 export default function EntityList({ entities }: { entities: Record<string, string[]> }) {
   if (!entities) return null;
   return (
