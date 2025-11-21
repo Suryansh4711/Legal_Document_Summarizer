@@ -2,6 +2,7 @@
 "use client";
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { uploadDocument } from "../services/api";
 
 export default function UploadForm() {
   const [file, setFile] = useState<File | null>(null);
@@ -11,18 +12,10 @@ export default function UploadForm() {
     if (!file) return alert("Choose a PDF file first");
     setLoading(true);
 
-    const fd = new FormData();
-    fd.append("file", file);
-
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API}/upload`, {
-        method: "POST",
-        body: fd,
-      });
-      if (!res.ok) throw new Error("Upload failed");
-      const j = await res.json();
-      localStorage.setItem("documentText", j.text);
-      localStorage.setItem("paragraphs", JSON.stringify(j.paragraphs || []));
+      const data = await uploadDocument(file);
+      localStorage.setItem("documentText", data.text);
+      localStorage.setItem("paragraphs", JSON.stringify(data.paragraphs || []));
       // move to summary page
       window.location.href = "/summary";
     } catch (err) {
