@@ -1,0 +1,25 @@
+fastapi==0.110.0
+uvicorn==0.29.0
+python-multipart==0.0.9
+pydantic==1.10.15
+
+# PDF extraction
+pdfplumber==0.10.3
+
+# Transformers (Summarization + NER)
+transformers==4.40.1
+tokenizers==0.19.1
+
+# Torch (CPU version — works on Cloud Run)
+torch==2.2.2
+
+# Sentence-BERT evidence matching
+sentence-transformers==2.5.1
+
+# Database
+SQLAlchemy==2.0.21
+psycopg2-binary==2.9.9
+
+# Utilities
+tqdm==4.66.3
+numpy==1.26.4
