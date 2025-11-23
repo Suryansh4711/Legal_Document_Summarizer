@@ -10,13 +10,18 @@ class HNSWRetriever:
     def __init__(self):
         self.index_path = Path(settings.DATA_DIR / "hnsw_index.bin")
         self.meta_path = Path(settings.DATA_DIR / "hnsw_meta.pkl")
+        
+        print(f"🔍 Looking for HNSW index at: {self.index_path}")
+        print(f"🔍 Looking for metadata at: {self.meta_path}")
+        print(f"📁 Index exists: {self.index_path.exists()}")
+        print(f"📁 Metadata exists: {self.meta_path.exists()}")
 
         self.model = SentenceTransformer("all-MiniLM-L6-v2")
 
         if self.index_path.exists() and self.meta_path.exists():
             self._load()
         else:
-            raise FileNotFoundError("HNSW index or metadata missing. Please build embeddings first.")
+            raise FileNotFoundError(f"HNSW index or metadata missing. Index: {self.index_path.exists()}, Meta: {self.meta_path.exists()}")
 
     def _load(self):
         # Load metadata (paragraph dataframe)
@@ -52,5 +57,10 @@ class HNSWRetriever:
 # Create global retriever instance
 try:
     retriever = HNSWRetriever()
-except FileNotFoundError:
+    print("✅ HNSW Retriever initialized successfully")
+except FileNotFoundError as e:
+    print(f"⚠️ HNSW index not found: {e}")
+    retriever = None
+except Exception as e:
+    print(f"❌ Error initializing retriever: {e}")
     retriever = None
